@@ -1,6 +1,7 @@
 package caps123987.customblock;
 
 import caps123987.services.AutoSave;
+import caps123987.types.SimpleBlock;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -18,9 +19,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public final class CustomBlock extends JavaPlugin {
     public static CustomBlock instance;
     private AutoSave autoSave;
+    private File blocksFile;
+    private Set<SimpleBlock> blocks = new HashSet<>();
     @Override
     public void onEnable() {
         instance = this;
+        blocksFile = new File(CustomBlock.instance.getDataFolder(),"blocks.yml");
         setUpBlocks();
 
         autoSave = new AutoSave();
@@ -28,40 +32,59 @@ public final class CustomBlock extends JavaPlugin {
     }
 
     public void setUpBlocks(){
-        File file = new File(CustomBlock.instance.getDataFolder(),"Networks.yml");
 
-        if(file.exists()) {
+        List<SimpleBlock> list;
 
-            FileConfiguration yaml= YamlConfiguration.loadConfiguration(file);
-            Set<Location> list = (Set<Location>) yaml.get("blocks");
+        if(blocksFile.exists()) {
+
+            FileConfiguration yaml= YamlConfiguration.loadConfiguration(blocksFile);
+            list = (List<SimpleBlock>) yaml.get("blocks");
+
+
 
         }else {
             try {
-                file.createNewFile();
+                blocksFile.createNewFile();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            FileConfiguration yaml=YamlConfiguration.loadConfiguration(file);
-            Set<Location> list = new HashSet<>();
-
-            list.add(new Location(Bukkit.getWorld("world"),0,0,0));
-            list.add(new Location(Bukkit.getWorld("world"),0,0,5));
+            FileConfiguration yaml = YamlConfiguration.loadConfiguration(blocksFile);
+            list = new ArrayList<>();
 
             yaml.set("blocks", list);
             try {
-                yaml.save(file);
+                yaml.save(blocksFile);
             } catch (IOException e) {
                 Bukkit.broadcastMessage(e.toString());
             }
         }
+
+        if(list!=null) {
+            blocks.addAll(list);
+        }else {
+            blocks = new HashSet<>();
+        }
     }
 
     public void saveBlocks(){
-
+        FileConfiguration yaml = YamlConfiguration.loadConfiguration(blocksFile);
+        yaml.set("blocks",blocks.stream().toList());
+        try {
+            yaml.save(blocksFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+            this.getLogger().warning("Blocks not saved");
+        }
     }
 
     @Override
     public void onDisable() {
         // Plugin shutdown logic
+    }
+    public Set<SimpleBlock> getBlocks(){
+        return blocks;
+    }
+    public void setBlocks(Set<SimpleBlock> blocks){
+        this.blocks = blocks;
     }
 }

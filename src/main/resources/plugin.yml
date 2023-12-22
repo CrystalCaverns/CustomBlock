@@ -1,4 +1,4 @@
-name: CutomBlock
+name: CustomBlock
 version: '${project.version}'
-main: caps123987.cutomblock.CutomBlock
+main: caps123987.customblock.CustomBlock
 api-version: '1.20'

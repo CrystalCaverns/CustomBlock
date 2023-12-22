@@ -5,11 +5,11 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>CAPS123987</groupId>
-  <artifactId>CutomBlock</artifactId>
+  <artifactId>CustomBlock</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
-  <name>CutomBlock</name>
+  <name>CustomBlock</name>
 
   <properties>
     <java.version>1.8</java.version>
@@ -23,8 +23,8 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.8.1</version>
         <configuration>
-          <source>${java.version}</source>
-          <target>${java.version}</target>
+          <source>16</source>
+          <target>16</target>
         </configuration>
       </plugin>
       <plugin>
