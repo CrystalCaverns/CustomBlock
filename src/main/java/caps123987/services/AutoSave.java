@@ -7,24 +7,13 @@ import org.bukkit.Bukkit;
 import java.util.logging.Level;
 
 public class AutoSave {
-
+    private CustomBlock plugin;
     public void start(CustomBlock plugin, int interval) {
+        this.plugin = plugin;
         Bukkit.getScheduler().runTaskTimer(CustomBlock.instance, this::save, 2000L, interval * 60L * 20L);
-
     }
     public void save() {
-
-
-        if(MeStorage.saveNets()) {
-            MeStorage.logger().log(Level.INFO,"MeNets saved");
-        }else {
-            MeStorage.logger().log(Level.WARNING, ChatColor.RED+"MeNets NOT saved");
-        }
-        if(MeStorage.saveDisks()) {
-            MeStorage.logger().log(Level.INFO,"MeDisks saved");
-        }else {
-            MeStorage.logger().log(Level.WARNING,ChatColor.RED+"MeDisks NOT saved");
-        }
+        plugin.saveBlocks();
     }
 
 }

@@ -9,7 +9,10 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public final class CustomBlock extends JavaPlugin {
@@ -21,7 +24,7 @@ public final class CustomBlock extends JavaPlugin {
         setUpBlocks();
 
         autoSave = new AutoSave();
-        autoSave.start(5);
+        autoSave.start(this,5);
     }
 
     public void setUpBlocks(){
@@ -30,7 +33,7 @@ public final class CustomBlock extends JavaPlugin {
         if(file.exists()) {
 
             FileConfiguration yaml= YamlConfiguration.loadConfiguration(file);
-            List<Location> list = (List<Location>) yaml.get("networks");
+            Set<Location> list = (Set<Location>) yaml.get("blocks");
 
         }else {
             try {
@@ -39,9 +42,12 @@ public final class CustomBlock extends JavaPlugin {
                 e.printStackTrace();
             }
             FileConfiguration yaml=YamlConfiguration.loadConfiguration(file);
-            List<Location> list = new CopyOnWriteArrayList<>();
+            Set<Location> list = new HashSet<>();
 
-            yaml.set("networks", list);
+            list.add(new Location(Bukkit.getWorld("world"),0,0,0));
+            list.add(new Location(Bukkit.getWorld("world"),0,0,5));
+
+            yaml.set("blocks", list);
             try {
                 yaml.save(file);
             } catch (IOException e) {
