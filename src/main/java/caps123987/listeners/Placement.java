@@ -12,6 +12,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import caps123987.types.SimpleBlock;
+import org.bukkit.persistence.PersistentDataType;
 
 public class Placement implements Listener {
     @EventHandler
@@ -31,7 +32,7 @@ public class Placement implements Listener {
             return;
         }
 
-        if(!item.getItemMeta().hasCustomModelData()){
+        if(!item.getItemMeta().getPersistentDataContainer().has(CustomBlock.instance.customBlockKey, PersistentDataType.STRING)){
             return;
         }
 
@@ -44,7 +45,7 @@ public class Placement implements Listener {
 
         SimpleBlock simBlock = new SimpleBlock(e.getClickedBlock().getRelative(e.getBlockFace()).getLocation());
 
-        CustomBlock.instance.getBlocks().add(simBlock);
+        CustomBlock.instance.addBlock(simBlock, item.getItemMeta().getPersistentDataContainer().get(CustomBlock.instance.customBlockKey, PersistentDataType.STRING));
 
     }
 }

@@ -1,9 +1,14 @@
 package caps123987.customblock;
 
+import caps123987.commands.GiveCommand;
+import caps123987.commands.GiveComplete;
 import caps123987.listeners.Placement;
+import caps123987.registers.BlockTypesReg;
+import caps123987.registers.RegProcesor;
 import caps123987.services.AutoSave;
 import caps123987.types.SimpleBlock;
 import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
@@ -11,25 +16,34 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public final class CustomBlock extends JavaPlugin {
     public static CustomBlock instance;
     private AutoSave autoSave;
+    public BlockTypesReg blockTypesReg;
+    public RegProcesor regProcesor;
     private File blocksFile;
-    private Set<SimpleBlock> blocks = new HashSet<>();
+    private Map<SimpleBlock, String> blocks = new HashMap<SimpleBlock,String>();
+    public NamespacedKey customBlockKey = new NamespacedKey(this,"customblock");
     @Override
     public void onEnable() {
         instance = this;
 
         ConfigurationSerialization.registerClass(SimpleBlock.class);
 
-        Bukkit.getPluginManager().registerEvents(new Placement(),this);
+        blockTypesReg = new BlockTypesReg(this);
+        regProcesor = new RegProcesor();
 
-        blocksFile = new File(CustomBlock.instance.getDataFolder(),"blocks.yml");
+        Bukkit.getPluginManager().registerEvents(new Placement(),this);
+        Bukkit.getPluginCommand("customblockgive").setExecutor(new GiveCommand());
+        Bukkit.getPluginCommand("customblockgive").setTabCompleter(new GiveComplete());
+
+        blocksFile = new File(CustomBlock.instance.getDataFolder(),"blocks");
+        if(!blocksFile.exists()){
+            blocksFile.mkdir();
+        }
+
         setUpBlocks();
 
         autoSave = new AutoSave();
@@ -37,60 +51,71 @@ public final class CustomBlock extends JavaPlugin {
     }
 
     public void setUpBlocks(){
-
-        List<SimpleBlock> list;
-
-        if(blocksFile.exists()) {
-
-            FileConfiguration yaml= YamlConfiguration.loadConfiguration(blocksFile);
-            list = (List<SimpleBlock>) yaml.get("blocks");
-
-
-
-        }else {
-            try {
-                blocksFile.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
+        for(String name : blockTypesReg.getAllNames()){
+            File file = new File(blocksFile,name+".yml");
+            if(!file.exists()){
+                try {
+                    file.createNewFile();
+                } catch (IOException ignored) {}
             }
-            FileConfiguration yaml = YamlConfiguration.loadConfiguration(blocksFile);
-            list = new ArrayList<>();
 
-            yaml.set("blocks", list);
-            try {
-                yaml.save(blocksFile);
-            } catch (IOException e) {
-                Bukkit.broadcastMessage(e.toString());
+            FileConfiguration yaml = YamlConfiguration.loadConfiguration(file);
+
+            List<SimpleBlock> values = (List<SimpleBlock>) yaml.getList("values");
+
+            if(values == null){
+                continue;
             }
-        }
 
-        if(list!=null) {
-            blocks.addAll(list);
-        }else {
-            blocks = new HashSet<>();
+            for(SimpleBlock block : values){
+                blocks.put(block,name);
+            }
         }
     }
 
     public void saveBlocks(){
-        FileConfiguration yaml = YamlConfiguration.loadConfiguration(blocksFile);
-        yaml.set("blocks",blocks.stream().toList());
-        try {
-            yaml.save(blocksFile);
-            this.getLogger().info("Blocks saved");
-        } catch (IOException e) {
-            e.printStackTrace();
-            this.getLogger().warning("Blocks not saved");
+
+        Map<String,List<SimpleBlock>> nameMap = new HashMap<String,List<SimpleBlock>>();
+
+
+        for(String name : blockTypesReg.getAllNames()){
+            nameMap.put(name, new ArrayList<SimpleBlock>());
+        }
+
+        for(Map.Entry<SimpleBlock, String> block : blocks.entrySet()){
+            nameMap.get(block.getValue()).add(block.getKey());
+        }
+
+        for(Map.Entry<String, List<SimpleBlock>> names : nameMap.entrySet()){
+            File file = new File(blocksFile,names.getKey()+".yml");
+            if(!file.exists()){
+                try {
+                    file.createNewFile();
+                } catch (IOException ignored) {}
+            }
+
+            FileConfiguration yaml = YamlConfiguration.loadConfiguration(file);
+
+            yaml.set("values",names.getValue());
+
+            try {
+                yaml.save(file);
+            } catch (IOException ignored) {}
         }
     }
 
+    public static CustomBlock getInstance(){
+        return instance;
+    }
     @Override
     public void onDisable() {
         saveBlocks();
     }
-    public Set<SimpleBlock> getBlocks(){
+    public Map<SimpleBlock, String> getBlocks(){
         return blocks;
     }
-    public void setBlocks(Set<SimpleBlock> blocks){
-        this.blocks = blocks;
+
+    public void addBlock(SimpleBlock block, String name){
+        blocks.put(block, name);
     }
 }

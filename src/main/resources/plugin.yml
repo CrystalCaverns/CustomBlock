@@ -2,3 +2,16 @@ name: CustomBlock
 version: '${project.version}'
 main: caps123987.customblock.CustomBlock
 api-version: '1.20'
+author: caps123987
+
+permissions:
+    customblock.admin:
+        description: CustomBlock admin permission
+        default: op
+
+commands:
+    customblockgive:
+        description: CustomBlock command
+        usage: /<command>
+        aliases: []
+        permission: customblock.admin
