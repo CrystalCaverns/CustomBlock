@@ -76,9 +76,9 @@ public class BlockTypesReg {
 
     public ItemStack getItem(String name){
         if(!register.containsKey(name)){
-            return new ItemStack(Material.AIR);
+            return new ItemStack(Material.GRASS_BLOCK);
         }
-        ItemStack item = new ItemStack(Material.GRASS_BLOCK);
+        ItemStack item = new ItemStack(Material.IRON_INGOT);
 
         ItemMeta meta = item.getItemMeta();
         meta.getPersistentDataContainer().set(plugin.customBlockKey, PersistentDataType.STRING, name);

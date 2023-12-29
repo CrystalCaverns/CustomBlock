@@ -24,8 +24,9 @@ public final class CustomBlock extends JavaPlugin {
     public BlockTypesReg blockTypesReg;
     public RegProcesor regProcesor;
     private File blocksFile;
-    private Map<SimpleBlock, String> blocks = new HashMap<SimpleBlock,String>();
+    private Map<String, String> blocks = new HashMap<String,String>();
     public NamespacedKey customBlockKey = new NamespacedKey(this,"customblock");
+
     @Override
     public void onEnable() {
         instance = this;
@@ -48,6 +49,10 @@ public final class CustomBlock extends JavaPlugin {
 
         autoSave = new AutoSave();
         autoSave.start(this,1);
+
+        this.getLogger().info("Loaded: "+blocks.size()+" blocks");
+
+        //lightUpdate = new LightUpdate(this);
     }
 
     public void setUpBlocks(){
@@ -61,13 +66,13 @@ public final class CustomBlock extends JavaPlugin {
 
             FileConfiguration yaml = YamlConfiguration.loadConfiguration(file);
 
-            List<SimpleBlock> values = (List<SimpleBlock>) yaml.getList("values");
+            List<String> values = (List<String>) yaml.getList("values");
 
             if(values == null){
                 continue;
             }
 
-            for(SimpleBlock block : values){
+            for(String block : values){
                 blocks.put(block,name);
             }
         }
@@ -75,18 +80,18 @@ public final class CustomBlock extends JavaPlugin {
 
     public void saveBlocks(){
 
-        Map<String,List<SimpleBlock>> nameMap = new HashMap<String,List<SimpleBlock>>();
+        Map<String,List<String>> nameMap = new HashMap<String,List<String>>();
 
 
         for(String name : blockTypesReg.getAllNames()){
-            nameMap.put(name, new ArrayList<SimpleBlock>());
+            nameMap.put(name, new ArrayList<String>());
         }
 
-        for(Map.Entry<SimpleBlock, String> block : blocks.entrySet()){
+        for(Map.Entry<String, String> block : blocks.entrySet()){
             nameMap.get(block.getValue()).add(block.getKey());
         }
 
-        for(Map.Entry<String, List<SimpleBlock>> names : nameMap.entrySet()){
+        for(Map.Entry<String, List<String>> names : nameMap.entrySet()){
             File file = new File(blocksFile,names.getKey()+".yml");
             if(!file.exists()){
                 try {
@@ -111,11 +116,20 @@ public final class CustomBlock extends JavaPlugin {
     public void onDisable() {
         saveBlocks();
     }
-    public Map<SimpleBlock, String> getBlocks(){
+    public Map<String, String> getBlocks(){
         return blocks;
     }
 
     public void addBlock(SimpleBlock block, String name){
-        blocks.put(block, name);
+        blocks.put(block.toString(), name);
     }
+
+    public boolean containsBlock(SimpleBlock block){
+        return blocks.containsKey(block.toString());
+    }
+
+    public void removeBlock(SimpleBlock block){
+        blocks.remove(block.toString());
+    }
+
 }

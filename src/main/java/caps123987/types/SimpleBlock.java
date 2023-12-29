@@ -3,6 +3,7 @@ package caps123987.types;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.jetbrains.annotations.NotNull;
 
@@ -53,10 +54,27 @@ public class SimpleBlock implements ConfigurationSerializable {
     public int getZ(){
         return z;
     }
-
-    public static SimpleBlock fromLocation(Location location){
-        return new SimpleBlock(location.getWorld(), location.getBlockX(), location.getBlockY(), location.getBlockZ());
+    public Location getLocation(){
+        return new Location(getWorld(),x,y,z);
     }
+    public Block getBlock(){
+        return getWorld().getBlockAt(getLocation());
+    }
+
+    @Override
+    public String toString() {
+        return "world=" + world+ ";x=" + x + ";y=" + y + ";z=" + z;
+    }
+
+    public static SimpleBlock fromString(String string){
+        String[] args = string.split(";");
+        String world = args[0].split("=")[1];
+        int x = Integer.parseInt(args[1].split("=")[1]);
+        int y = Integer.parseInt(args[2].split("=")[1]);
+        int z = Integer.parseInt(args[3].split("=")[1]);
+        return new SimpleBlock(world,x,y,z);
+    }
+
     @Override
     public @NotNull Map<String, Object> serialize() {
         Map<String, Object> map = new HashMap<String, Object>();
