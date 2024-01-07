@@ -13,6 +13,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -90,17 +91,13 @@ public class Placement implements Listener {
     }
 
     @EventHandler
-    public void onBreakInteract(PlayerInteractEntityEvent e){
-
-        if(!e.getHand().equals(EquipmentSlot.HAND)){
+    public void onBreakInteract(EntityDamageByEntityEvent e){
+        if(!(e.getEntity() instanceof Interaction interaction)){
             return;
         }
-
-        if(!(e.getRightClicked() instanceof Interaction interaction)){
+        if(!(e.getDamager() instanceof Player player)){
             return;
         }
-
-
         if(!interaction.getScoreboardTags().contains("customBlockInteraction")){
             return;
         }
@@ -112,6 +109,7 @@ public class Placement implements Listener {
             CustomBlock.instance.destroyBlock(block);
             interaction.remove();
         }
+
     }
     private void summonDisplayEntity(Block block, ItemStack item, int rotation){
 
