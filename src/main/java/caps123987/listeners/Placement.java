@@ -8,14 +8,13 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.entity.Display;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.ItemDisplay;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.player.PlayerInteractAtEntityEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -23,6 +22,7 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Transformation;
 import org.joml.AxisAngle4f;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.Objects;
@@ -30,7 +30,6 @@ import java.util.Objects;
 public class Placement implements Listener {
     @EventHandler
     public void onPlace(PlayerInteractEvent e){
-
 
         if(e.getHand() == EquipmentSlot.OFF_HAND){
             return;
@@ -62,44 +61,87 @@ public class Placement implements Listener {
             item.setAmount(item.getAmount()-1);
         }
 
-        ItemDisplay itemDisplay = (ItemDisplay) block.getWorld().spawnEntity(block.getLocation().add(0.5,0.5,0.5), EntityType.ITEM_DISPLAY);
-        ItemStack itemPut = item.clone();
-        itemPut.setAmount(1);
-        itemDisplay.setItemStack(itemPut);
-        itemDisplay.setGravity(false);
-        itemDisplay.setInvulnerable(true);
-        itemDisplay.addScoreboardTag("customBlock");
-        itemDisplay.setTransformation(new Transformation(new Vector3f(), new AxisAngle4f(), new Vector3f(1.0005f,1.0005f,1.0005f),new AxisAngle4f()));
-        itemDisplay.setBrightness(new Display.Brightness(block.getLightFromBlocks(),block.getLightFromSky()));
+        summonDisplayEntity(block, item.clone(), Math.round(e.getPlayer().getLocation().getYaw() / 90));
 
-        
-        block.setType(Material.OBSIDIAN);
+        if(item.getItemMeta().getCustomModelData()<500000) {
+            block.setType(Material.OBSIDIAN);
+        }else{
+            summonInteractEntity(block.getLocation().clone().add(.5,0,.5));
+        }
 
-        SimpleBlock simBlock = new SimpleBlock(e.getClickedBlock().getRelative(e.getBlockFace()).getLocation());
+        SimpleBlock simBlock = new SimpleBlock(block.getLocation());
 
         CustomBlock.instance.addBlock(simBlock, item.getItemMeta().getPersistentDataContainer().get(CustomBlock.instance.customBlockKey, PersistentDataType.STRING));
 
     }
 
     @EventHandler
-    public void onBreak(BlockBreakEvent e){
+    public void onBreakBlock(BlockBreakEvent e){
         if(!e.getBlock().getType().equals(Material.OBSIDIAN)){
             return;
         }
 
+
         if(CustomBlock.instance.containsBlock(new SimpleBlock(e.getBlock().getLocation()))){
             e.setDropItems(false);
 
-            ItemDisplay display = e.getBlock().getLocation().add(.5,.5,.5).getNearbyEntitiesByType(ItemDisplay.class, 1)
-                    .stream().findFirst().get();
-
-            e.getBlock().getWorld().dropItemNaturally(
-                    e.getBlock().getLocation(),
-                    display.getItemStack());
-
-            display.remove();
-
-            CustomBlock.instance.removeBlock(new SimpleBlock(e.getBlock().getLocation()));
+            CustomBlock.instance.destroyBlock(e.getBlock());
         }
+    }
+
+    @EventHandler
+    public void onBreakInteract(PlayerInteractEntityEvent e){
+
+        if(!e.getHand().equals(EquipmentSlot.HAND)){
+            return;
+        }
+
+        if(!(e.getRightClicked() instanceof Interaction interaction)){
+            return;
+        }
+
+
+        if(!interaction.getScoreboardTags().contains("customBlockInteraction")){
+            return;
+        }
+
+        Block block = interaction.getLocation().clone().subtract(.5,0,.5).getBlock();
+
+        if(CustomBlock.instance.containsBlock(new SimpleBlock(block))) {
+
+            CustomBlock.instance.destroyBlock(block);
+            interaction.remove();
+        }
+    }
+    private void summonDisplayEntity(Block block, ItemStack item, int rotation){
+
+        ItemDisplay itemDisplay = (ItemDisplay) block.getWorld().spawnEntity(block.getLocation().clone().add(0.5,0.5,0.5), EntityType.ITEM_DISPLAY);
+        ItemStack itemPut = item.clone();
+        itemPut.setAmount(1);
+        itemDisplay.setItemStack(itemPut);
+        itemDisplay.setGravity(false);
+        itemDisplay.setInvulnerable(true);
+        itemDisplay.addScoreboardTag("customBlock");
+        itemDisplay.setTransformation(
+                new Transformation(new Vector3f(),
+                    new AxisAngle4f(),
+                    new Vector3f(1.0005f,1.0005f,1.0005f),
+                    new AxisAngle4f((float) (getRotation(rotation) * (Math.PI/2)),0,1,0)));
+        itemDisplay.setBrightness(new Display.Brightness(block.getLightFromBlocks(),block.getLightFromSky()));
+    }
+
+    private void summonInteractEntity(Location loc){
+        Interaction interaction = (Interaction) Objects.requireNonNull(loc.getWorld()).spawnEntity(loc, EntityType.INTERACTION);
+        interaction.setGravity(false);
+        interaction.setInvulnerable(false);
+        interaction.getScoreboardTags().add("customBlockInteraction");
+    }
+    private int getRotation(int rotation){
+        return switch (rotation) {
+            case 1 -> 0;
+            case -1 -> 2;
+            case 2, -2 -> 3;
+            default -> 1;
+        };
     }
 }

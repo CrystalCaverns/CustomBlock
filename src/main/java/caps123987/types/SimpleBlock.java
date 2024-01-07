@@ -22,6 +22,13 @@ public class SimpleBlock implements ConfigurationSerializable {
         this.y = location.getBlockY();
         this.z = location.getBlockZ();
     }
+
+    public SimpleBlock(Block block){
+        this.world = block.getWorld().getName();
+        this.x = block.getX();
+        this.y = block.getY();
+        this.z = block.getZ();
+    }
     public SimpleBlock(World world, int x, int y, int z) {
         this.world = world.getName();
         this.x = x;

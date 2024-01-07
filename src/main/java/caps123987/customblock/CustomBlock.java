@@ -9,9 +9,11 @@ import caps123987.services.AutoSave;
 import caps123987.types.SimpleBlock;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
+import org.bukkit.block.Block;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
+import org.bukkit.entity.ItemDisplay;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -130,6 +132,18 @@ public final class CustomBlock extends JavaPlugin {
 
     public void removeBlock(SimpleBlock block){
         blocks.remove(block.toString());
+    }
+    public void destroyBlock(Block block){
+        ItemDisplay display = block.getLocation().add(.5,.5,.5).getNearbyEntitiesByType(ItemDisplay.class, 1)
+                .stream().findFirst().get();
+
+        block.getWorld().dropItemNaturally(
+                block.getLocation(),
+                display.getItemStack());
+
+        display.remove();
+
+        CustomBlock.instance.removeBlock(new SimpleBlock(block));
     }
 
 }
