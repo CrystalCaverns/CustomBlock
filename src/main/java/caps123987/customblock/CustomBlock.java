@@ -2,7 +2,8 @@ package caps123987.customblock;
 
 import caps123987.commands.GiveCommand;
 import caps123987.commands.GiveComplete;
-import caps123987.listeners.Placement;
+import caps123987.placement.PlacementHandler;
+import caps123987.placement.PlacementListener;
 import caps123987.registers.BlockTypesReg;
 import caps123987.registers.RegProcesor;
 import caps123987.services.AutoSave;
@@ -23,11 +24,12 @@ import java.util.*;
 public final class CustomBlock extends JavaPlugin {
     public static CustomBlock instance;
     private AutoSave autoSave;
-    public BlockTypesReg blockTypesReg;
-    public RegProcesor regProcesor;
+    private BlockTypesReg blockTypesReg;
+    private PlacementHandler placementHandler;
+    private RegProcesor regProcesor;
     private File blocksFile;
     private Map<String, String> blocks = new HashMap<String,String>();
-    public NamespacedKey customBlockKey = new NamespacedKey(this,"customblock");
+    private NamespacedKey customBlockKey = new NamespacedKey(this,"customblock");
 
     @Override
     public void onEnable() {
@@ -37,8 +39,9 @@ public final class CustomBlock extends JavaPlugin {
 
         blockTypesReg = new BlockTypesReg(this);
         regProcesor = new RegProcesor();
+        placementHandler = new PlacementHandler();
 
-        Bukkit.getPluginManager().registerEvents(new Placement(),this);
+        Bukkit.getPluginManager().registerEvents(new PlacementListener(),this);
         Bukkit.getPluginCommand("customblockgive").setExecutor(new GiveCommand());
         Bukkit.getPluginCommand("customblockgive").setTabCompleter(new GiveComplete());
 
@@ -133,17 +136,16 @@ public final class CustomBlock extends JavaPlugin {
     public void removeBlock(SimpleBlock block){
         blocks.remove(block.toString());
     }
-    public void destroyBlock(Block block){
-        ItemDisplay display = block.getLocation().add(.5,.5,.5).getNearbyEntitiesByType(ItemDisplay.class, 1)
-                .stream().findFirst().get();
-
-        block.getWorld().dropItemNaturally(
-                block.getLocation(),
-                display.getItemStack());
-
-        display.remove();
-
-        CustomBlock.instance.removeBlock(new SimpleBlock(block));
+    public PlacementHandler getPlacementHandler(){
+        return placementHandler;
     }
-
+    public BlockTypesReg getBlockTypesReg(){
+        return blockTypesReg;
+    }
+    public RegProcesor getRegProcesor(){
+        return regProcesor;
+    }
+    public NamespacedKey getCustomBlockKey(){
+        return customBlockKey;
+    }
 }

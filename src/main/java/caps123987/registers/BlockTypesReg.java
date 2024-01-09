@@ -81,7 +81,7 @@ public class BlockTypesReg {
         ItemStack item = new ItemStack(Material.SPRUCE_STAIRS);
 
         ItemMeta meta = item.getItemMeta();
-        meta.getPersistentDataContainer().set(plugin.customBlockKey, PersistentDataType.STRING, name);
+        meta.getPersistentDataContainer().set(plugin.getCustomBlockKey(), PersistentDataType.STRING, name);
         meta.setCustomModelData(register.get(name));
         meta.displayName(Component.text(name));
 

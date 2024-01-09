@@ -14,7 +14,7 @@ public class GiveComplete implements TabCompleter {
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if(args.length == 1){
-            return CustomBlock.getInstance().blockTypesReg.getRegister().keySet().stream().toList();
+            return CustomBlock.getInstance().getBlockTypesReg().getRegister().keySet().stream().toList();
         }
         return new ArrayList<>();
     }

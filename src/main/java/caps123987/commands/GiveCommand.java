@@ -15,12 +15,12 @@ public class GiveCommand implements CommandExecutor {
             return true;
         }
 
-        if(!CustomBlock.getInstance().blockTypesReg.getRegister().containsKey(args[0])){
+        if(!CustomBlock.getInstance().getBlockTypesReg().getRegister().containsKey(args[0])){
             sender.sendMessage("Block type not found");
             return true;
         }
 
-        ItemStack item = CustomBlock.getInstance().blockTypesReg.getItem(args[0]);
+        ItemStack item = CustomBlock.getInstance().getBlockTypesReg().getItem(args[0]);
 
         ((Player) sender).getInventory().addItem(item);
 
