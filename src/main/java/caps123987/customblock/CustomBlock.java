@@ -9,6 +9,7 @@ import caps123987.registers.RegProcesor;
 import caps123987.services.AutoSave;
 import caps123987.types.SimpleBlock;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.FileConfiguration;

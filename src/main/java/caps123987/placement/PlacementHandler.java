@@ -2,13 +2,16 @@ package caps123987.placement;
 
 import caps123987.customblock.CustomBlock;
 import caps123987.types.SimpleBlock;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.Transformation;
+import org.bukkit.util.Vector;
 import org.joml.AxisAngle4f;
 import org.joml.Vector3f;
 
@@ -30,12 +33,34 @@ public class PlacementHandler {
     }
     public void placeBlock(ItemStack item, Block block, int rotation){
 
-        summonDisplayEntity(block, item.clone(), Math.round(rotation / 90));
+        summonDisplayEntity(block, item.clone(), rotation);
 
         if(item.getItemMeta().getCustomModelData()<500000) {
             block.setType(Material.OBSIDIAN);
         }else{
             summonInteractEntity(block.getLocation().clone().add(.5,0,.5));
+            if(block.getType().equals(Material.SPRUCE_STAIRS)){
+                block.setType(Material.AIR);
+            }
+        }
+
+        SimpleBlock simBlock = new SimpleBlock(block.getLocation());
+
+        CustomBlock.instance.addBlock(simBlock, item.getItemMeta().getPersistentDataContainer().get(CustomBlock.instance.getCustomBlockKey(), PersistentDataType.STRING));
+
+    }
+
+    public void placeBlock(ItemStack item, Block block, BlockFace rotation){
+
+        summonDisplayEntity(block, item.clone(), rotation);
+
+        if(item.getItemMeta().getCustomModelData()<500000) {
+            block.setType(Material.OBSIDIAN);
+        }else{
+            summonInteractEntity(block.getLocation().clone().add(.5,0,.5));
+            if(block.getType().equals(Material.SPRUCE_STAIRS)){
+                block.setType(Material.AIR);
+            }
         }
 
         SimpleBlock simBlock = new SimpleBlock(block.getLocation());
@@ -59,6 +84,33 @@ public class PlacementHandler {
                         new Vector3f(1.0005f,1.0005f,1.0005f),
                         new AxisAngle4f((float) (getRotation(rotation) * (Math.PI/2)),0,1,0)));
         itemDisplay.setBrightness(new Display.Brightness(block.getLightFromBlocks(),block.getLightFromSky()));
+    }
+
+    public void summonDisplayEntity(Block block, ItemStack item, BlockFace rotation){
+
+        Bukkit.broadcastMessage(getRotation(rotation)+" "+rotation.toString());
+
+        ItemDisplay itemDisplay = (ItemDisplay) block.getWorld().spawnEntity(block.getLocation().clone().add(0.5,0.5,0.5), EntityType.ITEM_DISPLAY);
+        ItemStack itemPut = item.clone();
+        itemPut.setAmount(1);
+        itemDisplay.setItemStack(itemPut);
+        itemDisplay.setGravity(false);
+        itemDisplay.setInvulnerable(true);
+        itemDisplay.addScoreboardTag("customBlock");
+        itemDisplay.setTransformation(
+                new Transformation(new Vector3f(),
+                        new AxisAngle4f(),
+                        new Vector3f(1.0005f,1.0005f,1.0005f),
+                        new AxisAngle4f((float) (getRotation(rotation) * (Math.PI/2)),0,1,0)));
+        itemDisplay.setBrightness(new Display.Brightness(block.getLightFromBlocks(),block.getLightFromSky()));
+    }
+    private int getRotation(BlockFace rotation){
+        return switch (rotation) {
+            case NORTH -> 3;
+            case SOUTH -> 1;
+            case EAST -> 2;
+            default -> 0;
+        };
     }
 
     public void summonInteractEntity(Location loc){

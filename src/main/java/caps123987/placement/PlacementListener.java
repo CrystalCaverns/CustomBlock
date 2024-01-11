@@ -6,11 +6,14 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.Directional;
+import org.bukkit.block.data.type.Stairs;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -25,34 +28,15 @@ import java.util.Objects;
 
 public class PlacementListener implements Listener {
     @EventHandler
-    public void onPlace(PlayerInteractEvent e){
+    public void onPlace(BlockPlaceEvent e){
 
         if(e.getHand() == EquipmentSlot.OFF_HAND){
             return;
         }
 
-        if(!e.getAction().equals(Action.RIGHT_CLICK_BLOCK)){
-            return;
-        }
+        ItemStack item = e.getItemInHand();
 
-        ItemStack item = e.getItem();
-
-        if(item == null){
-            return;
-        }
-
-        Block block = e.getClickedBlock().getRelative(e.getBlockFace());
-
-        /*BoundingBox box = BoundingBox.of(block);
-
-        if(!block.getLocation().getNearbyEntities(1,1,1).stream().allMatch(entity -> entity instanceof ItemDisplay)){
-            return;
-        }*/
-
-
-        if(e.getPlayer().getBoundingBox().overlaps(BoundingBox.of(block))){
-            return;
-        }
+        Block block = e.getBlock();
 
         if(!item.getItemMeta().getPersistentDataContainer().has(CustomBlock.instance.getCustomBlockKey(), PersistentDataType.STRING)){
             return;
@@ -62,7 +46,10 @@ public class PlacementListener implements Listener {
             item.setAmount(item.getAmount()-1);
         }
 
-        CustomBlock.instance.getPlacementHandler().placeBlock(item,block, (int) e.getPlayer().getLocation().getYaw());
+
+
+        //CustomBlock.instance.getPlacementHandler().placeBlock(item,block, (int) Math.round(e.getPlayer().getLocation().getYaw() / 90));
+        CustomBlock.instance.getPlacementHandler().placeBlock(item,block,((Directional)block.getState().getBlockData()).getFacing());
     }
 
     @EventHandler
