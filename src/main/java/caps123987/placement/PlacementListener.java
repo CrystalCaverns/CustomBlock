@@ -46,10 +46,13 @@ public class PlacementListener implements Listener {
             item.setAmount(item.getAmount()-1);
         }
 
+        if(block.getState().getBlockData() instanceof Directional){
+            CustomBlock.instance.getPlacementHandler().placeBlock(item,block,((Directional)block.getState().getBlockData()).getFacing());
+        }else {
+            CustomBlock.instance.getPlacementHandler().placeBlock(item,block);
+        }
 
 
-        //CustomBlock.instance.getPlacementHandler().placeBlock(item,block, (int) Math.round(e.getPlayer().getLocation().getYaw() / 90));
-        CustomBlock.instance.getPlacementHandler().placeBlock(item,block,((Directional)block.getState().getBlockData()).getFacing());
     }
 
     @EventHandler
